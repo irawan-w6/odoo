@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import copy
+import re
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.osv import expression
@@ -19,7 +20,6 @@ class AccountReconciliation(models.AbstractModel):
     def process_bank_statement_line(self, st_line_ids, data):
         """ Handles data sent from the bank statement reconciliation widget
             (and can otherwise serve as an old-API bridge)
-
             :param st_line_ids
             :param list of dicts data: must contains the keys
                 'counterpart_aml_dicts', 'payment_aml_ids' and 'new_aml_dicts',
@@ -54,7 +54,6 @@ class AccountReconciliation(models.AbstractModel):
     def get_move_lines_for_bank_statement_line(self, st_line_id, partner_id=None, excluded_ids=None, search_str=False, offset=0, limit=None, mode=None):
         """ Returns move lines for the bank statement reconciliation widget,
             formatted as a list of dicts
-
             :param st_line_id: ids of the statement lines
             :param partner_id: optional partner id to select only the moves
                 line corresponding to the partner
@@ -78,11 +77,10 @@ class AccountReconciliation(models.AbstractModel):
             partner_id = st_line.partner_id.id
 
         domain = self._domain_move_lines_for_reconciliation(st_line, aml_accounts, partner_id, excluded_ids=excluded_ids, search_str=search_str, mode=mode)
-        recs_count = self.env['account.move.line'].search_count(domain)
 
         from_clause, where_clause, where_clause_params = self.env['account.move.line']._where_calc(domain).get_sql()
         query_str = '''
-            SELECT "account_move_line".id FROM {from_clause}
+            SELECT "account_move_line".id, COUNT(*) OVER() FROM {from_clause}
             {where_str}
             ORDER BY ("account_move_line".debit - "account_move_line".credit) = {amount} DESC,
                 "account_move_line".date_maturity ASC,
@@ -100,6 +98,12 @@ class AccountReconciliation(models.AbstractModel):
         self.env['account.bank.statement'].flush()
         self._cr.execute(query_str, params)
         res = self._cr.fetchall()
+
+        # All records will have the same count value
+        try:
+            recs_count = res[0][1]
+        except IndexError:
+            recs_count = 0
 
         aml_recs = self.env['account.move.line'].browse([i[0] for i in res])
         target_currency = st_line.currency_id or st_line.journal_id.currency_id or st_line.journal_id.company_id.currency_id
@@ -126,7 +130,7 @@ class AccountReconciliation(models.AbstractModel):
         self.env['res.partner']._apply_ir_rules(ir_rules_query, 'read')
         from_clause, where_clause, where_clause_params = ir_rules_query.get_sql()
         if where_clause:
-            where_partner = ('AND %s' % where_clause).replace('res_partner', 'p3')
+            where_partner = re.sub(r"\bres_partner\b", "p3", ('AND %s' % where_clause))
             params += where_clause_params
         else:
             where_partner = ''
@@ -157,7 +161,6 @@ class AccountReconciliation(models.AbstractModel):
     def get_bank_statement_line_data(self, st_line_ids, excluded_ids=None):
         """ Returns the data required to display a reconciliation widget, for
             each statement line in self
-
             :param st_line_id: ids of the statement lines
             :param excluded_ids: optional move lines ids excluded from the
                 result
@@ -180,9 +183,9 @@ class AccountReconciliation(models.AbstractModel):
         reconcile_model = self.env['account.reconcile.model'].search([('rule_type', '!=', 'writeoff_button')])
 
         # Search for missing partners when opening the reconciliation widget.
-        partner_map = self._get_bank_statement_line_partners(bank_statement_lines)
-
-        matching_amls = reconcile_model._apply_rules(bank_statement_lines, excluded_ids=excluded_ids, partner_map=partner_map)
+        if bank_statement_lines:
+            partner_map = self._get_bank_statement_line_partners(bank_statement_lines)
+            matching_amls = reconcile_model._apply_rules(bank_statement_lines, excluded_ids=excluded_ids, partner_map=partner_map)
 
         # Iterate on st_lines to keep the same order in the results list.
         bank_statements_left = self.env['account.bank.statement']
@@ -220,7 +223,6 @@ class AccountReconciliation(models.AbstractModel):
             a partner.
             Return ids of statement lines left to reconcile and other data for
             the reconciliation widget.
-
             :param bank_statement_line_ids: ids of the bank statement lines
         """
         if not bank_statement_line_ids:
@@ -251,6 +253,7 @@ class AccountReconciliation(models.AbstractModel):
 
         results.update({
             'statement_name': len(bank_statements_left) == 1 and bank_statements_left.name or False,
+            'statement_id': len(bank_statements_left) == 1 and bank_statements_left.id or False,
             'journal_id': bank_statements and bank_statements[0].journal_id.id or False,
             'notifications': []
         })
@@ -317,7 +320,7 @@ class AccountReconciliation(models.AbstractModel):
         # show entries that are not reconciled with other partner. Asking for a specific partner on a specific account
         # is never done.
         accounts_data = []
-        if not partner_ids:
+        if not partner_ids or not any(partner_ids):
             accounts_data = self.get_data_for_manual_reconciliation('account', account_ids)
         return {
             'customers': self.get_data_for_manual_reconciliation('partner', partner_ids, 'receivable'),
@@ -329,7 +332,6 @@ class AccountReconciliation(models.AbstractModel):
     def get_data_for_manual_reconciliation(self, res_type, res_ids=None, account_type=None):
         """ Returns the data required for the invoices & payments matching of partners/accounts (list of dicts).
             If no res_ids is passed, returns data for all partners/accounts that can be reconciled.
-
             :param res_type: either 'partner' or 'account'
             :param res_ids: ids of the partners/accounts to reconcile, use None to fetch data indiscriminately
                 of the id, use [] to prevent from fetching any data at all.
@@ -492,6 +494,7 @@ class AccountReconciliation(models.AbstractModel):
             '|', ('account_id.code', 'ilike', search_str),
             '|', ('move_id.name', 'ilike', search_str),
             '|', ('move_id.ref', 'ilike', search_str),
+            '|', ('payment_id.name', 'ilike', search_str),
             '|', ('date_maturity', 'like', parse_date(self.env, search_str)),
             '&', ('name', '!=', '/'), ('name', 'ilike', search_str)
         ]
@@ -537,7 +540,6 @@ class AccountReconciliation(models.AbstractModel):
     @api.model
     def _domain_move_lines_for_reconciliation(self, st_line, aml_accounts, partner_id, excluded_ids=[], search_str=False, mode='rp'):
         """ Return the domain for account.move.line records which can be used for bank statement reconciliation.
-
             :param aml_accounts:
             :param partner_id:
             :param excluded_ids:
@@ -633,6 +635,10 @@ class AccountReconciliation(models.AbstractModel):
             domain = expression.AND([[('id', 'not in', excluded_ids)], domain])
         if search_str:
             str_domain = self._domain_move_lines(search_str=search_str)
+            str_domain = expression.OR([
+                str_domain,
+                [('partner_id.name', 'ilike', search_str)]
+            ])
             domain = expression.AND([domain, str_domain])
         # filter on account.move.line having the same company as the given account
         account = self.env['account.account'].browse(account_id)
@@ -642,7 +648,6 @@ class AccountReconciliation(models.AbstractModel):
     @api.model
     def _prepare_move_lines(self, move_lines, target_currency=False, target_date=False, recs_count=0):
         """ Returns move lines formatted for the manual/bank reconciliation widget
-
             :param move_line_ids:
             :param target_currency: currency (browse) you want the move line debit/credit converted into
             :param target_date: date to use for the monetary conversion
@@ -814,8 +819,8 @@ class AccountReconciliation(models.AbstractModel):
             AND (%s IS NULL AND b.account_id = %s)
             AND (%s IS NULL AND NOT b.reconciled OR b.id = %s)
             AND (%s is NULL OR (a.partner_id = %s AND b.partner_id = %s))
-            AND a.id IN (SELECT id FROM {0})
-            AND b.id IN (SELECT id FROM {0})
+            AND a.id IN (SELECT "account_move_line".id FROM {0})
+            AND b.id IN (SELECT "account_move_line".id FROM {0})
             ORDER BY a.date desc
             LIMIT 1
             """.format(from_clause + where_str)
@@ -837,7 +842,6 @@ class AccountReconciliation(models.AbstractModel):
     @api.model
     def _process_move_lines(self, move_line_ids, new_mv_line_dicts):
         """ Create new move lines from new_mv_line_dicts (if not empty) then call reconcile_partial on self and new move lines
-
             :param new_mv_line_dicts: list of dicts containing values suitable for account_move_line.create()
         """
         if len(move_line_ids) < 1 or len(move_line_ids) + len(new_mv_line_dicts) < 2:
