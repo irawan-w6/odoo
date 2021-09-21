@@ -384,6 +384,9 @@ var LineRenderer = Widget.extend(FieldManagerMixin, {
             var stateMvLines = state['mv_lines_'+matching_modes[i]] || [];
             var recs_count = stateMvLines.length > 0 ? stateMvLines[0].recs_count : 0;
             var remaining = state['remaining_' + matching_modes[i]];
+            console.log(matching_modes[i]);
+            console.log(state['remaining_' + matching_modes[i]]);
+            console.log(state);
             var $mv_lines = this.$('div[id*="notebook_page_' + matching_modes[i] + '"] .match table tbody').empty();
             this.$('.o_notebook li a[href*="notebook_page_' + matching_modes[i] + '"]').parent().toggleClass('d-none', stateMvLines.length === 0 && !state['filter_'+matching_modes[i]]);
 

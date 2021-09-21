@@ -48,7 +48,7 @@ var StatementAction = AbstractAction.extend({
         // number of statements/partners/accounts to display
         defaultDisplayQty: 10,
         // number of moves lines displayed in 'match' mode
-        limitMoveLines: 15,
+        limitMoveLines: 35,
     }),
 
     _onNavigationMove: function (ev) {
@@ -454,7 +454,7 @@ var ManualAction = StatementAction.extend({
         LineRenderer: ReconciliationRenderer.ManualLineRenderer,
         params: ['company_ids', 'mode', 'partner_ids', 'account_ids'],
         defaultDisplayQty: 30,
-        limitMoveLines: 15,
+        limitMoveLines: 35,
     }),
 
     //--------------------------------------------------------------------------

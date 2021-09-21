@@ -114,7 +114,7 @@ var StatementModel = BasicModel.extend({
         this.alreadyDisplayed = [];
         this.domain = [];
         this.defaultDisplayQty = options && options.defaultDisplayQty || 10;
-        this.limitMoveLines = options && options.limitMoveLines || 50;
+        this.limitMoveLines = options && options.limitMoveLines || 35;
         this.display_context = 'init';
     },
 
@@ -1207,7 +1207,7 @@ var StatementModel = BasicModel.extend({
         line['mv_lines_'+mode] = _.uniq(line['mv_lines_'+mode].concat(mv_lines), l => l.id);
         if (mv_lines[0]){
             line['remaining_'+mode] = mv_lines[0].recs_count - mv_lines.length;
-        } else if (line['mv_lines_'+mode].lenght == 0) {
+        } else if (line['mv_lines_'+mode].length == 0) {
             line['remaining_'+mode] = 0;
         }
         this._formatLineProposition(line, mv_lines);
@@ -1881,6 +1881,11 @@ var ManualModel = StatementModel.extend({
         var self = this;
         var line = this.getLine(handle);
         line.mv_lines_match = _.uniq((line.mv_lines_match || []).concat(mv_lines), l => l.id);
+        if (mv_lines[0]) {
+            line['remaining_match'] = mv_lines[0].recs_count - mv_lines.length;
+        } else if (line['mv_lines_match'].length == 0) {
+            line['remaining_match'] = 0;
+        }
         this._formatLineProposition(line, mv_lines);
 
         if (line.mode !== 'create' && !line.mv_lines_match.length && !line.filter_match.length) {

@@ -3654,6 +3654,7 @@ class AccountMoveLine(models.Model):
             total_currency = 0
             writeoff_lines = []
             date = fields.Date.today()
+            counterpart_label = '-'
             for vals in lines:
                 # Check and complete vals
                 if 'account_id' not in vals or 'journal_id' not in vals:
@@ -3682,11 +3683,12 @@ class AccountMoveLine(models.Model):
                     vals['amount_currency'] = sign * abs(sum([r.amount_residual_currency for r in self]))
                     total_currency += vals['amount_currency']
 
+                counterpart_label = vals['name']
                 writeoff_lines.append(compute_writeoff_counterpart_vals(vals))
 
             # Create balance line
             writeoff_lines.append({
-                'name': _('Write-Off'),
+                'name': _('Write-Off: {}'.format(counterpart_label)),
                 'debit': total > 0 and total or 0.0,
                 'credit': total < 0 and -total or 0.0,
                 'amount_currency': total_currency,
