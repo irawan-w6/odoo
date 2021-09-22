@@ -8,6 +8,7 @@ var basic_fields = require('web.basic_fields');
 var core = require('web.core');
 var time = require('web.time');
 var session = require('web.session');
+var Dialog = require('web.Dialog');
 var qweb = core.qweb;
 var _t = core._t;
 
@@ -833,7 +834,12 @@ var LineRenderer = Widget.extend(FieldManagerMixin, {
      * @private
      */
     _onValidate: function () {
-        this.trigger_up('validate');
+        var self = this;
+        Dialog.confirm(this, _t("Are you sure that you want to process this record?"), {
+            confirm_callback: function () {
+                self.trigger_up('validate');
+            },
+        });
     }
 });
 
