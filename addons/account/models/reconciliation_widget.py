@@ -864,6 +864,6 @@ class AccountReconciliation(models.AbstractModel):
                     mv_line_dict['amount_currency'] = False
                 writeoff_lines += account_move_line._create_writeoff([mv_line_dict])
 
-            (account_move_line + writeoff_lines).reconcile()
+            (writeoff_lines + account_move_line).reconcile()
         else:
             account_move_line.reconcile()
