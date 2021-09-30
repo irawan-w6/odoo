@@ -533,6 +533,8 @@ class account_payment(models.Model):
                         rec_pay_line_name += _("Vendor Payment")
                 if payment.invoice_ids:
                     rec_pay_line_name += ': %s' % ', '.join(payment.invoice_ids.mapped('name'))
+                else:
+                    rec_pay_line_name = payment.name
 
             # Compute 'name' to be used in liquidity line.
             if payment.payment_type == 'transfer':
@@ -544,7 +546,7 @@ class account_payment(models.Model):
 
             move_vals = {
                 'date': payment.payment_date,
-                'ref': payment.communication,
+                'ref': payment.communication or payment.name,
                 'journal_id': payment.journal_id.id,
                 'currency_id': payment.journal_id.currency_id.id or payment.company_id.currency_id.id,
                 'partner_id': payment.partner_id.id,
