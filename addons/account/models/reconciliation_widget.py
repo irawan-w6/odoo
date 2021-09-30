@@ -338,7 +338,6 @@ class AccountReconciliation(models.AbstractModel):
             :param account_type: if a partner is both customer and vendor, you can use 'payable' to reconcile
                 the vendor-related journal entries and 'receivable' for the customer-related entries.
         """
-
         Account = self.env['account.account']
         Partner = self.env['res.partner']
 
@@ -353,6 +352,9 @@ class AccountReconciliation(models.AbstractModel):
         is_partner = res_type == 'partner'
         res_alias = is_partner and 'p' or 'a'
         aml_ids = self._context.get('active_ids') and self._context.get('active_model') == 'account.move.line' and tuple(self._context.get('active_ids'))
+        if not aml_ids:
+            aml_ids = self._context.get('move_line_id') and tuple([self._context.get('move_line_id')])
+
         all_entries = self._context.get('all_entries', False)
         all_entries_query = """
             AND EXISTS (
@@ -832,7 +834,6 @@ class AccountReconciliation(models.AbstractModel):
             partner_id, partner_id, partner_id,
         ] + where_clause_params + where_clause_params
         self.env.cr.execute(query, params)
-
         pairs = self.env.cr.fetchall()
 
         if pairs:
