@@ -2814,6 +2814,11 @@ class AccountMoveLine(models.Model):
             }
         else:
             vals = {}
+
+        # prevent update price unit for rounding
+        if self.product_id:
+            vals.pop('price_unit')
+            
         return vals
 
     # -------------------------------------------------------------------------
