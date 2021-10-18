@@ -2814,6 +2814,11 @@ class AccountMoveLine(models.Model):
             }
         else:
             vals = {}
+
+        # prevent update price unit for rounding
+        if self.product_id:
+            vals.pop('price_unit')
+            
         return vals
 
     # -------------------------------------------------------------------------
@@ -3150,14 +3155,20 @@ class AccountMoveLine(models.Model):
                         balance = vals.get('amount_currency', 0.0)
                     else:
                         balance = vals.get('debit', 0.0) - vals.get('credit', 0.0)
-                    vals.update(self._get_fields_onchange_balance_model(
+
+                    update_value = self._get_fields_onchange_balance_model(
                         vals.get('quantity', 0.0),
                         vals.get('discount', 0.0),
                         balance,
                         move.type,
                         currency,
                         taxes
-                    ))
+                    )
+                    # prevent unit price changes
+                    if vals.get('product_id'):
+                        update_value.pop('price_unit')
+                    vals.update(update_value)
+                    
                     vals.update(self._get_price_total_and_subtotal_model(
                         vals.get('price_unit', 0.0),
                         vals.get('quantity', 0.0),
