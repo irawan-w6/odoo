@@ -350,8 +350,8 @@ class SaleOrder(models.Model):
             'partner_shipping_id': addr['delivery'],
             'user_id': partner_user.id or self.env.uid
         }
-        if self.env['ir.config_parameter'].sudo().get_param('account.use_invoice_terms') and self.env.company.invoice_terms:
-            values['note'] = self.with_context(lang=self.partner_id.lang).env.company.invoice_terms
+        # if self.env['ir.config_parameter'].sudo().get_param('account.use_invoice_terms') and self.env.company.invoice_terms:
+        #     values['note'] = self.with_context(lang=self.partner_id.lang).env.company.invoice_terms
 
         # Use team of salesman if any otherwise leave as-is
         values['team_id'] = partner_user.team_id.id if partner_user and partner_user.team_id else self.team_id
