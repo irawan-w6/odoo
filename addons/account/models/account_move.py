@@ -552,9 +552,12 @@ class AccountMove(models.Model):
                 taxes_map_entry['tax_base_amount'] += tax_vals['base']
                 taxes_map_entry['grouping_dict'] = grouping_dict
             line.tax_exigible = tax_exigible
-
+            
         # ==== Process taxes_map ====
         for taxes_map_entry in taxes_map.values():
+            taxes_map_entry['tax_base_amount'] = int(taxes_map_entry['tax_base_amount'])
+            taxes_map_entry['balance'] = int(taxes_map_entry['balance'])
+
             # Don't create tax lines with zero balance.
             if self.currency_id.is_zero(taxes_map_entry['balance']) and self.currency_id.is_zero(taxes_map_entry['amount_currency']):
                 taxes_map_entry['grouping_dict'] = False

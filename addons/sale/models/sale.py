@@ -48,8 +48,8 @@ class SaleOrder(models.Model):
                 amount_tax += line.price_tax
             order.update({
                 'amount_untaxed': amount_untaxed,
-                'amount_tax': amount_tax,
-                'amount_total': amount_untaxed + amount_tax,
+                'amount_tax': int(amount_tax),
+                'amount_total': amount_untaxed + int(amount_tax),
             })
 
     @api.depends('order_line.invoice_lines')

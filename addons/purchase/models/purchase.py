@@ -27,8 +27,8 @@ class PurchaseOrder(models.Model):
                 amount_tax += line.price_tax
             order.update({
                 'amount_untaxed': order.currency_id.round(amount_untaxed),
-                'amount_tax': order.currency_id.round(amount_tax),
-                'amount_total': amount_untaxed + amount_tax,
+                'amount_tax': order.currency_id.round(int(amount_tax)),
+                'amount_total': amount_untaxed + int(amount_tax),
             })
 
     @api.depends('state', 'order_line.qty_invoiced', 'order_line.qty_received', 'order_line.product_qty')
