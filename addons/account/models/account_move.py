@@ -367,12 +367,12 @@ class AccountMove(models.Model):
             self.invoice_vendor_bill_id = False
             self._recompute_dynamic_lines()
 
-    @api.onchange('type')
-    def _onchange_type(self):
-        ''' Onchange made to filter the partners depending of the type. '''
-        if self.is_sale_document(include_receipts=True):
-            if self.env['ir.config_parameter'].sudo().get_param('account.use_invoice_terms'):
-                self.narration = self.company_id.invoice_terms or self.env.company.invoice_terms
+    # @api.onchange('type')
+    # def _onchange_type(self):
+    #     ''' Onchange made to filter the partners depending of the type. '''
+    #     if self.is_sale_document(include_receipts=True):
+    #         if self.env['ir.config_parameter'].sudo().get_param('account.use_invoice_terms'):
+    #             self.narration = self.company_id.invoice_terms or self.env.company.invoice_terms
 
     @api.onchange('invoice_line_ids')
     def _onchange_invoice_line_ids(self):
