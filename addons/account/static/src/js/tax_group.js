@@ -94,7 +94,8 @@ odoo.define('account.tax_group', function (require) {
             var displayEditWidget = self._isPurchaseDocument() && this.record.data.state !== 'posted' && this.getParent().mode === 'edit';
             this.$el.html($(QWeb.render('AccountTaxGroupTemplate', {
                 lines: self.value,
-                displayEditWidget: displayEditWidget,
+                // displayEditWidget: displayEditWidget,
+                displayEditWidget: false
             })));
         },
 
