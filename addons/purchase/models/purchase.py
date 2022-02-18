@@ -22,22 +22,32 @@ class PurchaseOrder(models.Model):
     def _amount_all(self):
         for order in self:
             amount_untaxed = amount_tax = 0.0
-            res = {}
-            for line in order.order_line:
-                amount_untaxed += line.price_subtotal
-                # amount_tax += line.price_tax
-                for tax in line.taxes_id:
-                    res.setdefault(tax, {'tax_amount': 0.0})
-                    res[tax]['tax_amount'] += line.price_subtotal * tax.amount / 100
-            res = sorted(res.items(), key=lambda l: l[0].sequence)
-            for group, amount in res:
-                amount_tax += int(amount['tax_amount'])
+            if order.currency_id.decimal_places == 0:
+                res = {}
+                for line in order.order_line:
+                    amount_untaxed += line.price_subtotal
+                    # amount_tax += line.price_tax
+                    for tax in line.taxes_id:
+                        res.setdefault(tax, {'tax_amount': 0.0})
+                        res[tax]['tax_amount'] += line.price_subtotal * tax.amount / 100
+                res = sorted(res.items(), key=lambda l: l[0].sequence)
+                for group, amount in res:
+                    amount_tax += int(amount['tax_amount'])
 
-            order.update({
-                'amount_untaxed': order.currency_id.round(amount_untaxed),
-                'amount_tax': order.currency_id.round(int(amount_tax)),
-                'amount_total': amount_untaxed + int(amount_tax),
-            })
+                order.update({
+                    'amount_untaxed': order.currency_id.round(amount_untaxed),
+                    'amount_tax': order.currency_id.round(int(amount_tax)),
+                    'amount_total': amount_untaxed + int(amount_tax),
+                })
+            else:
+                for line in order.order_line:
+                    amount_untaxed += line.price_subtotal
+                    amount_tax += line.price_tax
+                order.update({
+                    'amount_untaxed': order.currency_id.round(amount_untaxed),
+                    'amount_tax': order.currency_id.round(amount_tax),
+                    'amount_total': amount_untaxed + amount_tax,
+                })
 
     @api.depends('state', 'order_line.qty_invoiced', 'order_line.qty_received', 'order_line.product_qty')
     def _get_invoiced(self):
