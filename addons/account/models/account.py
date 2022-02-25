@@ -1701,13 +1701,24 @@ class AccountTax(models.Model):
             total_included += factorized_tax_amount
             i += 1
 
-        return {
-            'base_tags': taxes.mapped(is_refund and 'refund_repartition_line_ids' or 'invoice_repartition_line_ids').filtered(lambda x: x.repartition_type == 'base').mapped('tag_ids').ids,
-            'taxes': taxes_vals,
-            'total_excluded': sign * (currency.round(total_excluded) if round_total else total_excluded),
-            'total_included': sign * (currency.round(total_included) if round_total else total_included),
-            'total_void': sign * (currency.round(total_void) if round_total else total_void),
-        }
+        total_excluded_include_tax = round((currency.round(total_excluded) if round_total else total_excluded), precision_digits=None, precision_rounding=1, rounding_method='UP')
+
+        if included_flag:
+            return {
+                'base_tags': taxes.mapped(is_refund and 'refund_repartition_line_ids' or 'invoice_repartition_line_ids').filtered(lambda x: x.repartition_type == 'base').mapped('tag_ids').ids,
+                'taxes': taxes_vals,
+                'total_excluded': sign * total_excluded_include_tax,
+                'total_included': sign * (currency.round(total_included) if round_total else total_included),
+                'total_void': sign * (currency.round(total_void) if round_total else total_void),
+            }
+        else:
+            return {
+                'base_tags': taxes.mapped(is_refund and 'refund_repartition_line_ids' or 'invoice_repartition_line_ids').filtered(lambda x: x.repartition_type == 'base').mapped('tag_ids').ids,
+                'taxes': taxes_vals,
+                'total_excluded': sign * (currency.round(total_excluded) if round_total else total_excluded),
+                'total_included': sign * (currency.round(total_included) if round_total else total_included),
+                'total_void': sign * (currency.round(total_void) if round_total else total_void),
+            }
 
     @api.model
     def _fix_tax_included_price(self, price, prod_taxes, line_taxes):
