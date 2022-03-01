@@ -1070,6 +1070,7 @@ class GroupsView(models.Model):
         if view and view.exists() and view._name == 'ir.ui.view':
             group_no_one = view.env.ref('base.group_no_one')
             group_employee = view.env.ref('base.group_user')
+            group_system = view.env.ref('base.group_system')
             xml1, xml2, xml3 = [], [], []
             xml_by_category = {}
             xml1.append(E.separator(string='User Type', colspan="2", groups='base.group_no_one'))
@@ -1100,6 +1101,9 @@ class GroupsView(models.Model):
                     # application name with a selection field
                     field_name = name_selection_groups(gs.ids)
                     attrs['attrs'] = user_type_readonly
+                    if group_system.id in gs.ids:
+                        attrs['groups'] = 'base.group_system'
+
                     if category_name not in xml_by_category:
                         xml_by_category[category_name] = []
                         xml_by_category[category_name].append(E.newline())
