@@ -606,6 +606,17 @@ class AccountMove(models.Model):
                 tax_line._onchange_amount_currency()
                 tax_line._onchange_balance()
 
+    def _tax_tags_need_inversion(self, move, is_refund, tax_type):
+        """ Tells whether the tax tags need to be inverted for a given move.
+        :param move: the move for which we want to check inversion
+        :param is_refund: whether or not the operation we want the inversion value for is a refund
+        :param tax_type: the tax type of the operation we want the inversion value for
+        :return: True if the tags need to be inverted
+        """
+        if move.type == 'entry':
+            return (tax_type == 'sale' and not is_refund) or (tax_type == 'purchase' and is_refund)
+        return False
+
     def _recompute_cash_rounding_lines(self):
         ''' Handle the cash rounding feature on invoices.
 
@@ -1908,6 +1919,19 @@ class AccountMove(models.Model):
                     for inv_rep_line, ref_rep_line in zip(tax.invoice_repartition_line_ids, tax.refund_repartition_line_ids):
                         mapping[inv_rep_line] = ref_rep_line
             return mapping
+
+        def invert_tags_if_needed(repartition_line, tags):
+            tax_type = repartition_line.tax_id.type_tax_use
+            tags_need_inversion = self._tax_tags_need_inversion(
+                self,
+                (
+                    (tax_type == 'purchase' and line_vals['credit'] > 0) or
+                    (tax_type == 'sale' and line_vals['debit'] > 0)
+                ),
+                tax_type)
+            if tags_need_inversion:
+                return self.env['account.move.line']._revert_signed_tags(tags)
+            return tags
 
         move_vals = self.with_context(include_business_fields=True).copy_data(default=default_values)[0]
 
@@ -3999,6 +4023,38 @@ class AccountMoveLine(models.Model):
             ('full_reconcile_id', '=', False),
             ('statement_line_id', '!=', False),
         ]
+
+     def _convert_tags_for_cash_basis(self, tags):
+        """ Cash basis entries are managed by the tax report just like misc operations.
+        So it means that the tax report will not apply any additional multiplicator
+        to the balance of the cash basis lines.
+        For invoices move lines whose multiplicator would have been -1 (if their
+        taxes had not CABA), it will hence cause sign inversion if we directly copy
+        the tags from those lines. Instead, we need to invert all the signs from these
+        tags (if they come from tax report lines; tags created in data for financial
+        reports will stay onchanged).
+        """
+        self.ensure_one()
+        tax_multiplicator = (self.journal_id.type == 'sale' and -1 or 1) * (self.move_id.type in ('in_refund', 'out_refund') and -1 or 1)
+        if tax_multiplicator == -1:
+            # Take the opposite tags instead
+            return self._revert_signed_tags(tags)
+
+        return tags
+
+    @api.model
+    def _revert_signed_tags(self, tags):
+        rslt = self.env['account.account.tag']
+        for tag in tags:
+            if tag.tax_report_line_ids:
+                # tag created by an account.tax.report.line
+                new_tag = tag.tax_report_line_ids[0].tag_ids.filtered(lambda x: x.tax_negate != tag.tax_negate)
+                rslt += new_tag
+            else:
+                # tag created in data for use by an account.financial.html.report.line
+                rslt += tag
+
+        return rslt
 
 
 class AccountPartialReconcile(models.Model):
