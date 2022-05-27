@@ -1899,19 +1899,15 @@ class AccountMove(models.Model):
             # invoice_repartition_line => refund_repartition_line
             mapping = {}
 
-            # Do nothing if the move is not a credit note.
-            if move_vals['type'] not in ('out_refund', 'in_refund'):
-                return mapping
-
             for line_command in move_vals.get('line_ids', []):
                 line_vals = line_command[2]  # (0, 0, {...})
 
-                if line_vals.get('tax_ids') and line_vals['tax_ids'][0][2]:
-                    # Base line.
-                    tax_ids = line_vals['tax_ids'][0][2]
-                elif line_vals.get('tax_line_id'):
+                if line_vals.get('tax_line_id'):
                     # Tax line.
                     tax_ids = [line_vals['tax_line_id']]
+                elif line_vals.get('tax_ids') and line_vals['tax_ids'][0][2]:
+                    # Base line.
+                    tax_ids = line_vals['tax_ids'][0][2]
                 else:
                     continue
 
