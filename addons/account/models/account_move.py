@@ -4024,7 +4024,7 @@ class AccountMoveLine(models.Model):
             ('statement_line_id', '!=', False),
         ]
 
-     def _convert_tags_for_cash_basis(self, tags):
+    def _convert_tags_for_cash_basis(self, tags):
         """ Cash basis entries are managed by the tax report just like misc operations.
         So it means that the tax report will not apply any additional multiplicator
         to the balance of the cash basis lines.
