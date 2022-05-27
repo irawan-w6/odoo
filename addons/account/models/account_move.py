@@ -1911,7 +1911,18 @@ class AccountMove(models.Model):
 
         move_vals = self.with_context(include_business_fields=True).copy_data(default=default_values)[0]
 
-        tax_repartition_lines_mapping = compute_tax_repartition_lines_mapping(move_vals)
+        is_refund = False
+        if move_vals['type'] in ('out_refund', 'in_refund'):
+            is_refund = True
+        elif move_vals['type'] == 'entry':
+            base_lines = self.line_ids.filtered(lambda line: line.tax_ids)
+            tax_type = set(base_lines.tax_ids.mapped('type_tax_use'))
+            if tax_type == {'sale'} and sum(base_lines.mapped('debit')) == 0:
+                is_refund = True
+            elif tax_type == {'purchase'} and sum(base_lines.mapped('credit')) == 0:
+                is_refund = True
+
+        tax_repartition_lines_mapping = compute_tax_repartition_lines_mapping(move_vals) if is_refund else {}
 
         for line_command in move_vals.get('line_ids', []):
             line_vals = line_command[2]  # (0, 0, {...})
