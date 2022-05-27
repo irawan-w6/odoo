@@ -295,6 +295,7 @@ class FSWatcherInotify(FSWatcherBase):
     def stop(self):
         self.started = False
         self.thread.join()
+        del self.watcher  # ensures inotify watches are freed up before reexec
 
 
 #----------------------------------------------------------
@@ -495,6 +496,8 @@ class ThreadedServer(CommonServer):
                     # and would prevent the forced shutdown.
                     thread.join(0.05)
                     time.sleep(0.05)
+        
+        odoo.sql_db.close_all()
 
         _logger.debug('--')
         logging.shutdown()
