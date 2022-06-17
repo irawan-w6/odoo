@@ -361,8 +361,10 @@ class PurchaseOrder(models.Model):
 
     def button_cancel(self):
         for order in self:
-            for inv in order.invoice_ids:
-                if inv and inv.state not in ('cancel', 'draft'):
+            # for inv in order.invoice_ids:
+            #     if inv and inv.state not in ('cancel', 'draft'):
+            if order.invoice_count > 0:
+                if sum(order.order_line.mapped('qty_invoiced')) != 0:
                     raise UserError(_("Unable to cancel this purchase order. You must first cancel the related vendor bills."))
 
         self.write({'state': 'cancel'})
