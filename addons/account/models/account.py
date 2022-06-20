@@ -920,10 +920,10 @@ class AccountJournal(models.Model):
                 if self.env['account.move'].search([('journal_id', 'in', self.ids)], limit=1):
                     raise UserError(_('This journal already contains items, therefore you cannot modify its short name.'))
                 new_prefix = self._get_sequence_prefix(vals['code'], refund=False)
-                journal.sequence_id.write({'prefix': new_prefix})
+                journal.sudo().sequence_id.write({'prefix': new_prefix})
                 if journal.refund_sequence_id:
                     new_prefix = self._get_sequence_prefix(vals['code'], refund=True)
-                    journal.refund_sequence_id.write({'prefix': new_prefix})
+                    journal.sudo().refund_sequence_id.write({'prefix': new_prefix})
             if 'currency_id' in vals:
                 if not 'default_debit_account_id' in vals and journal.default_debit_account_id:
                     journal.default_debit_account_id.currency_id = vals['currency_id']
