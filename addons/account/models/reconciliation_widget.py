@@ -864,7 +864,12 @@ class AccountReconciliation(models.AbstractModel):
                 if not same_currency:
                     mv_line_dict['amount_currency'] = False
                 writeoff_lines += account_move_line._create_writeoff([mv_line_dict])
-
-            (writeoff_lines + account_move_line).reconcile()
+            if len((writeoff_lines + account_move_line).mapped('partner_id')) == 1:
+                (writeoff_lines + account_move_line).reconcile()
+            else:
+                raise UserError('Please Reconcile with same partner')
         else:
-            account_move_line.reconcile()
+            if len(account_move_line.mapped('partner_id')) == 1:
+                account_move_line.reconcile()
+            else:
+                raise UserError('Please Reconcile with same partner')
