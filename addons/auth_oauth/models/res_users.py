@@ -103,7 +103,7 @@ class ResUsers(models.Model):
                 if not has_user:
                     raise AccessDenied()
 
-                assert len(oauth_user) == 1
+                assert len(has_user) == 1
                 
                 has_user.write({
                     'oauth_provider_id': values['oauth_provider_id'],
