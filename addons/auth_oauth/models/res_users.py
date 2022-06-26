@@ -103,12 +103,14 @@ class ResUsers(models.Model):
                 if not has_user:
                     raise AccessDenied()
 
+                state = json.loads(params['state'])
+                token = state.get('t')
                 try:
                 _, login, _ = self.signup(values, token)
                     return login
                 except (SignupError, UserError):
                     raise access_denied_exception
-
+                    
             assert len(oauth_user) == 1
             oauth_user.write({'oauth_access_token': params['access_token']})
             return oauth_user.login
