@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
+import hashlib
 import itertools
+import json
 import logging
 import operator
 from collections import defaultdict
@@ -890,3 +892,15 @@ class IrTranslation(models.Model):
                 for m in msg_group)
 
         return translations_per_module, lang_params
+
+    @api.model
+    @tools.ormcache('frozenset(mods)', 'lang')
+    def get_web_translations_hash(self, mods, lang):
+        translations, lang_params = self.get_translations_for_webclient(mods, lang)
+        translation_cache = {
+            'lang_parameters': lang_params,
+            'modules': translations,
+            'lang': lang,
+            'multi_lang': len(self.env['res.lang'].sudo().get_installed()) > 1,
+        }
+        return hashlib.sha1(json.dumps(translation_cache, sort_keys=True).encode()).hexdigest()
