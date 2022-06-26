@@ -97,7 +97,18 @@ class ResUsers(models.Model):
         try:
             oauth_user = self.search([("oauth_uid", "=", oauth_uid), ('oauth_provider_id', '=', provider)])
             if not oauth_user:
-                raise AccessDenied()
+                values = self._generate_signup_values(provider, validation, params)
+                has_user = self.search([('login', '=', valus['email'])])
+
+                if not has_user:
+                    raise AccessDenied()
+
+                try:
+                _, login, _ = self.signup(values, token)
+                    return login
+                except (SignupError, UserError):
+                    raise access_denied_exception
+
             assert len(oauth_user) == 1
             oauth_user.write({'oauth_access_token': params['access_token']})
             return oauth_user.login
