@@ -1668,7 +1668,12 @@ class Action(http.Controller):
             if additional_context:
                 ctx.update(additional_context)
             request.context = ctx
-            action = request.env[action_type].browse([action_id]).read()
+            
+            if action_type == 'ir.actions.act_window':
+                action = request.env[action_type].browse([action_id]).with_context(EnvParameter=True).read()
+            else:
+                action = request.env[action_type].browse([action_id]).read()
+
             if action:
                 value = clean_action(action[0])
         return value
