@@ -561,7 +561,7 @@
                                     <field name="price_total" invisible="1"/>
                                     <field name="price_unit"/>
                                     <field name="display_type"/>
-                                    <field name="tax_id" invisible="1"/>
+                                    <field name="tax_id" invisible="0"/>
                                     <field name="company_id" invisible="1"/>
                                     <templates>
                                         <t t-name="kanban-box">

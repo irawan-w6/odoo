@@ -815,6 +815,9 @@
                                                 <field name="price_unit"/>
                                                 <field name="discount" groups="base.group_no_one"/>
                                                 <field name="currency_id" invisible="1"/>
+                                                <field name="credit" invisible="1"/>
+                                                <field name="debit" invisible="1"/>
+                                                <field name="recompute_tax_line" invisible="1"/>
                                             </group>
                                             <group>
                                                 <field name="analytic_tag_ids" groups="analytic.group_analytic_tags" widget="many2many_tags"/>
