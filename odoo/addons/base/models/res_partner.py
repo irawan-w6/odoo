@@ -372,7 +372,7 @@ class Partner(models.Model):
 
     def _write_company_type(self):
         for partner in self:
-            partner.is_company = partner.company_type == 'company'
+            partner.sudo().is_company = partner.company_type == 'company'
 
     @api.onchange('company_type')
     def onchange_company_type(self):
