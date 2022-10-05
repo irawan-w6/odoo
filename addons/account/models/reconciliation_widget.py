@@ -865,7 +865,28 @@ class AccountReconciliation(models.AbstractModel):
                     mv_line_dict['amount_currency'] = False
                 writeoff_lines += account_move_line._create_writeoff([mv_line_dict])
             if len((writeoff_lines + account_move_line).mapped('partner_id')) == 1:
-                (writeoff_lines + account_move_line).reconcile()
+                # Reconcile per Write-off
+                i = 0
+                writeoff = writeoff_lines[i]
+                for aml in account_move_line:
+                    if aml.debit > 0:
+                        (writeoff + aml).reconcile()
+                        i += 1
+                        if len(writeoff_lines) > i:
+                            writeoff = writeoff_lines[i]
+                # Reconcile when length Write-off more than length Account Move Line
+                # A         500 (Payment)
+                # B     300     (Invoice)
+                # C         60  (Write-off)
+                # D     100     (Invoice)
+                # E         80  (Write-off)
+                # F         10  (Write-off)
+                if len(writeoff_lines) > i:
+                    (writeoff_lines[i:] + account_move_line).reconcile()
+                # Reconcile All Account Move Line
+                else:
+                    account_move_line.reconcile()
+                # (writeoff_lines + account_move_line).reconcile()
             else:
                 raise UserError('Please Reconcile with same partner')
         else:
