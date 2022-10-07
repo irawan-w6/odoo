@@ -2502,7 +2502,7 @@ class AccountMoveLine(models.Model):
     date_maturity = fields.Date(string='Due Date', index=True,
         help="This field is used for payable and receivable journal entries. You can put the limit date for the payment of this line.")
     currency_id = fields.Many2one('res.currency', string='Currency')
-    partner_id = fields.Many2one('res.partner', string='Partner', ondelete='restrict')
+    partner_id = fields.Many2one('res.partner', string='Partner', ondelete='restrict', index=True)
     product_uom_id = fields.Many2one('uom.uom', string='Unit of Measure')
     product_id = fields.Many2one('product.product', string='Product')
 
