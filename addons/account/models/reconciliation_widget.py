@@ -868,9 +868,19 @@ class AccountReconciliation(models.AbstractModel):
                 # Reconcile per Write-off
                 i = 0
                 writeoff = writeoff_lines[i]
+                writeoff_recon_all = self.env['account.move.line']
                 for aml in account_move_line:
-                    if aml.debit > 0:
-                        (writeoff + aml).reconcile()
+                    if not aml.payment_id:
+                        if aml.debit > 0:
+                            if writeoff.credit > 0:
+                                (writeoff + aml).reconcile()
+                            else:
+                                writeoff_recon_all |= writeoff
+                        elif aml.credit > 0:
+                            if writeoff.debit > 0:
+                                (writeoff + aml).reconcile()
+                            else:
+                                writeoff_recon_all |= writeoff
                         i += 1
                         if len(writeoff_lines) > i:
                             writeoff = writeoff_lines[i]
@@ -882,7 +892,9 @@ class AccountReconciliation(models.AbstractModel):
                 # E         80  (Write-off)
                 # F         10  (Write-off)
                 if len(writeoff_lines) > i:
-                    (writeoff_lines[i:] + account_move_line).reconcile()
+                    writeoff_recon_all |= writeoff_lines[i:]
+                if writeoff_recon_all:
+                    (writeoff_recon_all + account_move_line).reconcile()
                 # Reconcile All Account Move Line
                 else:
                     account_move_line.reconcile()
