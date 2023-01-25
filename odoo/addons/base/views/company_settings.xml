@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="company_settings_tree_view" model="ir.ui.view">
+            <field name="name">company.settings.tree</field>
+            <field name="model">company.settings</field>
+            <field name="arch" type="xml">
+                <tree string="Company Settings">
+                    <field name="company_id" options="{'no_create': True, 'no_edit': True}"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="company_settings_form_view" model="ir.ui.view">
+            <field name="name">company.settings.form</field>
+            <field name="model">company.settings</field>
+            <field name="arch" type="xml">
+                <form string="Company Settings">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="company_id" class="oe_edit_only"/>
+                            <h1>
+                                <field name="company_id" options="{'no_create': True, 'no_edit': True}"/>
+                            </h1>
+                        </div>
+                        <notebook>
+                            <page name="general" string="General">
+                            </page>
+                            <page name="sales" string="Sales">
+                            </page>
+                            <page name="purchase" string="Purchase">
+                            </page>
+                            <page name="accounting" string="Accounting">
+                            </page>
+                            <page name="tax" string="Tax">
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_company_settings" model="ir.actions.act_window">
+            <field name="name">Company Settings</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">company.settings</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new company settings
+              </p>
+            </field>
+        </record>
+        <menuitem action="action_company_settings" id="menu_action_company_settings" parent="base.menu_users"/>
+    </data>
+</odoo>

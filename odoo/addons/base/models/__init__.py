@@ -44,3 +44,4 @@ from . import res_company
 from . import res_users
 
 from . import decimal_precision
+from . import company_settings
