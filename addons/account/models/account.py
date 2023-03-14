@@ -1620,7 +1620,6 @@ class AccountTax(models.Model):
                 i -= 1
 
         total_excluded = recompute_base(base, incl_fixed_amount, incl_percent_amount, incl_division_amount)
-
         # 5) Iterate the taxes in the sequence order to compute missing tax amounts.
         # Start the computation of accumulated amounts at the total_excluded value.
         base = total_included = total_void = total_excluded
@@ -1701,7 +1700,8 @@ class AccountTax(models.Model):
             total_included += factorized_tax_amount
             i += 1
 
-        total_excluded_include_tax = round((currency.round(total_excluded) if round_total else total_excluded), precision_digits=None, precision_rounding=1, rounding_method='UP')
+        # total_excluded_include_tax = round((currency.round(total_excluded) if round_total else total_excluded), precision_digits=None, precision_rounding=1, rounding_method='UP')
+        total_excluded_include_tax = round((total_excluded), precision_digits=None, precision_rounding=1, rounding_method='UP')
 
         if included_flag:
             return {
