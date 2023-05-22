@@ -655,7 +655,7 @@ class Connection(object):
         raise NotImplementedError()
     __nonzero__ = __bool__
 
-def connection_info_for(db_or_uri):
+def connection_info_for(db_or_uri, is_ro=False):
     """ parse the given `db_or_uri` and return a 2-tuple (dbname, connection_params)
 
     Connection params are either a dictionary with a single key ``dsn``
@@ -679,13 +679,17 @@ def connection_info_for(db_or_uri):
 
     connection_info = {'database': db_or_uri}
     for p in ('host', 'port', 'user', 'password', 'sslmode'):
-        cfg = tools.config['db_' + p]
+        if is_ro:
+            cfg = tools.config['db_ro_' + p]
+        else:
+            cfg = tools.config['db_' + p]
         if cfg:
             connection_info[p] = cfg
 
     return db_or_uri, connection_info
 
 _Pool = None
+_Pool_RO = None
 
 def db_connect(to, allow_uri=False):
     global _Pool
@@ -696,6 +700,19 @@ def db_connect(to, allow_uri=False):
     if not allow_uri and db != to:
         raise ValueError('URI connections not allowed')
     return Connection(_Pool, db, info)
+
+def db_connect_ro(to, allow_uri=False, is_ro=False):
+    global _Pool_RO
+    if _Pool_RO is None:
+        maxcon = int(tools.config['db_maxconn'])
+        if tools.config.get('db_ro_maxconn'):
+            maxcon = int(tools.config['db_ro_maxconn'])
+        _Pool_RO = ConnectionPool(maxcon)
+
+    db, info = connection_info_for(db_or_uri=to, is_ro=is_ro)
+    if not allow_uri and db != to:
+        raise ValueError('URI connections not allowed')
+    return Connection(_Pool_RO, db, info)
 
 def close_db(db_name):
     """ You might want to call odoo.modules.registry.Registry.delete(db_name) along this function."""
