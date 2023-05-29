@@ -493,10 +493,10 @@ class AccountReconciliation(models.AbstractModel):
 
     def _str_domain_for_mv_line(self, search_str):
         return [
-            '|', ('account_id.code', 'ilike', search_str),
+            # '|', ('account_id.code', 'ilike', search_str),
             '|', ('move_id.name', 'ilike', search_str),
             '|', ('move_id.ref', 'ilike', search_str),
-            '|', ('payment_id.name', 'ilike', search_str),
+            # '|', ('payment_id.name', 'ilike', search_str),
             '|', ('date_maturity', 'like', parse_date(self.env, search_str)),
             '&', ('name', '!=', '/'), ('name', 'ilike', search_str)
         ]
@@ -585,10 +585,10 @@ class AccountReconciliation(models.AbstractModel):
         # Domain factorized for all reconciliation use cases
         if search_str:
             str_domain = self._domain_move_lines(search_str=search_str)
-            str_domain = expression.OR([
-                str_domain,
-                [('partner_id.name', 'ilike', search_str)]
-            ])
+            # str_domain = expression.OR([
+            #     str_domain,
+            #     [('partner_id.name', 'ilike', search_str)]
+            # ])
             domain = expression.AND([
                 domain,
                 str_domain
@@ -637,10 +637,10 @@ class AccountReconciliation(models.AbstractModel):
             domain = expression.AND([[('id', 'not in', excluded_ids)], domain])
         if search_str:
             str_domain = self._domain_move_lines(search_str=search_str)
-            str_domain = expression.OR([
-                str_domain,
-                [('partner_id.name', 'ilike', search_str)]
-            ])
+            # str_domain = expression.OR([
+            #     str_domain,
+            #     [('partner_id.name', 'ilike', search_str)]
+            # ])
             domain = expression.AND([domain, str_domain])
         # filter on account.move.line having the same company as the given account
         account = self.env['account.account'].browse(account_id)
