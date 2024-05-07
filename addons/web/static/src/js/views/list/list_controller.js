@@ -747,6 +747,9 @@ var ListController = BasicController.extend({
     _onSelectionChanged: function (ev) {
         this.selectedRecords = ev.data.selection;
         this._toggleSidebar();
+        if (!config.device.isMobile) {
+            this.$('.o_list_export_xlsx').toggle(!this.selectedRecords.length);
+        }
     },
     /**
      * If the record is set as dirty while in multiple record edition,
