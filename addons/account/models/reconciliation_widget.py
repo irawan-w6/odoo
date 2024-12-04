@@ -289,7 +289,7 @@ class AccountReconciliation(models.AbstractModel):
         else:
             account = Account.browse(account_id)
             target_currency = account.currency_id or account.company_id.currency_id
-        return self._prepare_move_lines(lines, target_currency=target_currency,recs_count=len(lines)
+        return self._prepare_move_lines(lines, target_currency=target_currency,recs_count=len(lines))
 
     @api.model
     def get_all_data_for_manual_reconciliation(self, partner_ids, account_ids):
