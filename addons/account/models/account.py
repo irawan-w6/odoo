@@ -1700,15 +1700,15 @@ class AccountTax(models.Model):
             total_included += factorized_tax_amount
             i += 1
 
-        if round_total:
-            total_included = currency.round(total_included)
-        
-        if included_flag:
-            total_tax = sum(t.get('amount', 0.0) for t in taxes_vals)
-            total_excluded = total_included - round(total_tax, precision_rounding=1, rounding_method='DOWN')
+        # if round_total:
+        #     total_included = currency.round(total_included)
+        #
+        # if included_flag:
+        #     total_tax = sum(t.get('amount', 0.0) for t in taxes_vals)
+        #     total_excluded = total_included - round(total_tax, precision_rounding=1, rounding_method='DOWN')
 
-        total_excluded_include_tax = round((currency.round(total_excluded) if round_total else total_excluded), precision_digits=None, precision_rounding=1, rounding_method='UP')
-        # total_excluded_include_tax = round((total_excluded), precision_digits=None, precision_rounding=1, rounding_method='UP')
+        # total_excluded_include_tax = round((currency.round(total_excluded) if round_total else total_excluded), precision_digits=None, precision_rounding=1, rounding_method='UP')
+        total_excluded_include_tax = round((total_excluded), precision_digits=None, precision_rounding=1)
 
         if included_flag:
             return {
