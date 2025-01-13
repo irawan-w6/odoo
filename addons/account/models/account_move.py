@@ -556,8 +556,8 @@ class AccountMove(models.Model):
         # ==== Process taxes_map ====
         for taxes_map_entry in taxes_map.values():
             if self.currency_id.decimal_places == 0:
-                taxes_map_entry['tax_base_amount'] = int(taxes_map_entry['tax_base_amount'])
-                taxes_map_entry['balance'] = int(taxes_map_entry['balance'])
+                taxes_map_entry['tax_base_amount'] = self.currency_id.round(taxes_map_entry['tax_base_amount'])
+                taxes_map_entry['balance'] = self.currency_id.round(taxes_map_entry['balance'])
 
             # Don't create tax lines with zero balance.
             if self.currency_id.is_zero(taxes_map_entry['balance']) and self.currency_id.is_zero(taxes_map_entry['amount_currency']):
