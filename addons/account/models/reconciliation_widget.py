@@ -624,7 +624,7 @@ class AccountReconciliation(models.AbstractModel):
                 '&',
                     ('reconciled', '=', False),
                     ('account_id', '=', account_id),
-                    ('move_id.state', '=', 'posted'),
+                    ('parent_state', '=', 'posted'),
             ]
         domain = expression.AND([domain, [('balance', '!=', 0.0)]])
         if partner_id:
