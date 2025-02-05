@@ -282,14 +282,14 @@ class AccountReconciliation(models.AbstractModel):
         Currency = self.env['res.currency']
 
         domain = self._domain_move_lines_for_manual_reconciliation(account_id, partner_id, excluded_ids, search_str)
-        # recs_count = Account_move_line.search_count(domain)
+        recs_count = Account_move_line.search_count(domain)
         lines = Account_move_line.search(domain, limit=limit)
         if target_currency_id:
             target_currency = Currency.browse(target_currency_id)
         else:
             account = Account.browse(account_id)
             target_currency = account.currency_id or account.company_id.currency_id
-        recs_count = len(lines)+10 if len(lines) == limit else len(lines)
+        # recs_count = len(lines)+10 if len(lines) == limit else len(lines)
         return self._prepare_move_lines(lines, target_currency=target_currency,recs_count=recs_count)
 
     @api.model

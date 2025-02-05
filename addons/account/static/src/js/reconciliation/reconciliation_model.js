@@ -149,8 +149,7 @@ var StatementModel = BasicModel.extend({
 
         return Promise.all([
             this._computeLine(line),
-            this._performMoveLine(handle, 'match_rp', line.mode == 'match_rp'? 1 : 0),
-            this._performMoveLine(handle, 'match_other', line.mode == 'match_other'? 1 : 0)
+            this._performMoveLine(handle, line.mode, 1)
         ]);
     },
     /**
@@ -768,7 +767,7 @@ var StatementModel = BasicModel.extend({
                 this._computeReconcileModels(handle, prop.reconcileModelId);
             }
         }
-        if ('force_tax_included' in values || 'amount' in values || 'account_id' in values) {
+        if ('label' in values || 'force_tax_included' in values || 'amount' in values || 'account_id' in values) {
             prop.__tax_to_recompute = true;
         }
         line.createForm = _.pick(prop, this.quickCreateFields);
@@ -1881,10 +1880,10 @@ var ManualModel = StatementModel.extend({
         var self = this;
         var line = this.getLine(handle);
         line.mv_lines_match = _.uniq((line.mv_lines_match || []).concat(mv_lines), l => l.id);
-        if (mv_lines[0]) {
-            line['remaining_match'] = mv_lines[0].recs_count - mv_lines.length;
-        } else if (line['mv_lines_match'].length == 0) {
-            line['remaining_match'] = 0;
+        if (mv_lines[0]){
+            line.remaining_match = mv_lines[0].recs_count - mv_lines.length;
+        } else if (line.mv_lines_match.length == 0) {
+            line.remaining_match = 0;
         }
         this._formatLineProposition(line, mv_lines);
 
