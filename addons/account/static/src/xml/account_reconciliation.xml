@@ -188,7 +188,7 @@
         </tbody>
     </table>
     <div class="load-more text-center">
-        <a href="#">Load more... (<span></span> remaining)</a>
+        <a href="#">Load more... (<span></span>)</a>
     </div>
 </div>
 
