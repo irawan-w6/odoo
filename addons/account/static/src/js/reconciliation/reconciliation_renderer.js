@@ -398,7 +398,7 @@ var LineRenderer = Widget.extend(FieldManagerMixin, {
                 $mv_lines.append($line);
             });
             this.$('div[id*="notebook_page_' + matching_modes[i] + '"] .match div.load-more').toggle(remaining > 0);
-            this.$('div[id*="notebook_page_' + matching_modes[i] + '"] .match div.load-more span').text(remaining);
+//            this.$('div[id*="notebook_page_' + matching_modes[i] + '"] .match div.load-more span').text(remaining);
         }
 
         // balance
