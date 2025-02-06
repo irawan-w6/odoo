@@ -149,7 +149,7 @@ var StatementModel = BasicModel.extend({
 
         return Promise.all([
             this._computeLine(line),
-            this._performMoveLine(handle, line.mode, 1)
+//            this._performMoveLine(handle, line.mode, 1)
         ]);
     },
     /**
