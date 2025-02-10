@@ -810,14 +810,14 @@ class AccountReconciliation(models.AbstractModel):
             AND move_b.id = b.move_id
             AND move_b.journal_id = journal_b.id
             AND (move_b.state = 'posted' OR (move_b.state = 'draft' AND journal_b.post_at = 'bank_rec'))
-            AND a.amount_residual = -b.amount_residual
+            AND a.amount_residual = -b.amount_residual 
             AND a.balance != 0.0
             AND b.balance != 0.0
             AND NOT a.reconciled
             AND a.account_id = %s
             AND (%s IS NULL AND b.account_id = %s)
             AND (%s IS NULL AND NOT b.reconciled OR b.id = %s)
-            AND (%s is NULL OR (a.partner_id = %s AND b.partner_id = %s))
+            AND (a.partner_id = %s AND b.partner_id = %s)
             AND a.id IN (SELECT "account_move_line".id FROM {0})
             AND b.id IN (SELECT "account_move_line".id FROM {0})
             ORDER BY a.date desc
@@ -828,7 +828,7 @@ class AccountReconciliation(models.AbstractModel):
             account_id,
             move_line_id, account_id,
             move_line_id, move_line_id,
-            partner_id, partner_id, partner_id,
+            partner_id, partner_id,
         ] + where_clause_params + where_clause_params
         self.env.cr.execute(query, params)
         pairs = self.env.cr.fetchall()
