@@ -396,7 +396,7 @@ class Message(models.Model):
             ('res_id', '!=', 0),
             ('model', '!=', False),
             ('message_type', '!=', 'user_notification')
-        ])
+        ], limit=100)
         return messages._format_mail_failures()
 
     @api.model
