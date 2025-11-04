@@ -3795,7 +3795,11 @@ class AccountMoveLine(models.Model):
 
     def remove_move_reconcile(self):
         """ Undo a reconciliation """
-        (self.mapped('matched_debit_ids') + self.mapped('matched_credit_ids')).unlink()
+        # (self.mapped('matched_debit_ids') + self.mapped('matched_credit_ids')).unlink()
+        for matched_debit in self.mapped('matched_debit_ids'):
+            matched_debit.unlink()
+        for matched_credit in self.mapped('matched_credit_ids'):
+            matched_credit.unlink()
 
     def _copy_data_extend_business_fields(self, values):
         ''' Hook allowing copying business fields under certain conditions.
