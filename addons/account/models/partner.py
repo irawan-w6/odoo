@@ -297,12 +297,11 @@ class ResPartner(models.Model):
             return True
 
         # Get all partner IDs including children
+        all_partners_and_children = {}
         all_partner_ids = []
-        partner_child_map = {}
         for partner in self:
-            child_ids = self.with_context(active_test=False).search([('id', 'child_of', partner.id)]).ids
-            partner_child_map[partner] = child_ids
-            all_partner_ids.extend(child_ids)
+            all_partners_and_children[partner] = self.with_context(active_test=False).search([('id', 'child_of', partner.id)]).ids
+            all_partner_ids += all_partners_and_children[partner]
 
         if not all_partner_ids:
             return True
@@ -326,10 +325,10 @@ class ResPartner(models.Model):
         """
 
         self.env.cr.execute(query, (tuple(all_partner_ids), company_id))
-        price_totals = dict(self.env.cr.fetchall())
+        price_totals = self.env.cr.dictfetchall()
 
-        for partner, child_ids in partner_child_map.items():
-            partner.total_invoiced = sum(price_totals.get(child_id, 0) for child_id in child_ids)
+        for partner, child_ids in all_partners_and_children.items():
+            partner.total_invoiced = sum(price['total'] for price in price_totals if price['partner_id'] in child_ids)
 
     def _compute_journal_item_count(self):
         AccountMoveLine = self.env['account.move.line']
