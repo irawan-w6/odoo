@@ -307,9 +307,12 @@ class ResPartner(models.Model):
         if not all_partner_ids:
             return True
 
-        # Direct optimized query - no complex view, just sum invoice lines
+        # Direct optimized query - replicate account_invoice_report logic
+        # price_subtotal in the view is -SUM(line.balance), so we sum -balance
+        # Include company filtering like the original ORM approach
+        company_id = self.env.company.id
         query = """
-            SELECT SUM(aml.price_subtotal) as total, am.partner_id
+            SELECT SUM(-aml.balance) as total, am.partner_id
             FROM account_move_line aml
             INNER JOIN account_move am ON am.id = aml.move_id
             WHERE am.partner_id IN %s
@@ -318,10 +321,11 @@ class ResPartner(models.Model):
               AND am.invoice_payment_state != 'revision'
               AND aml.account_id IS NOT NULL
               AND NOT aml.exclude_from_invoice_tab
+              AND aml.company_id = %s
             GROUP BY am.partner_id
         """
 
-        self.env.cr.execute(query, (tuple(all_partner_ids),))
+        self.env.cr.execute(query, (tuple(all_partner_ids), company_id))
         price_totals = dict(self.env.cr.fetchall())
 
         for partner, child_ids in partner_child_map.items():
