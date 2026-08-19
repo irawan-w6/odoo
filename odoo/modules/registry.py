@@ -52,25 +52,25 @@ class Registry(Mapping):
                 size = int(config['limit_memory_soft'] / avgsz)
         return LRU(size)
 
-    def __new__(cls, db_name):
+    def __new__(cls, db_name, is_ro=False):
         """ Return the registry for the given database name."""
         with cls._lock:
             try:
                 return cls.registries[db_name]
             except KeyError:
-                return cls.new(db_name)
+                return cls.new(db_name, is_ro=is_ro)
             finally:
                 # set db tracker - cleaned up at the WSGI dispatching phase in
                 # odoo.service.wsgi_server.application
                 threading.current_thread().dbname = db_name
 
     @classmethod
-    def new(cls, db_name, force_demo=False, status=None, update_module=False):
+    def new(cls, db_name, force_demo=False, status=None, update_module=False, is_ro=False):
         """ Create and return a new registry for the given database name. """
         with cls._lock:
             with odoo.api.Environment.manage():
                 registry = object.__new__(cls)
-                registry.init(db_name)
+                registry.init(db_name, is_ro=is_ro)
 
                 # Initializing a registry will call general code which will in
                 # turn call Registry() to obtain the registry being initialized.
@@ -82,9 +82,9 @@ class Registry(Mapping):
                     registry.setup_signaling()
                     # This should be a method on Registry
                     try:
-                        odoo.modules.load_modules(registry._db, force_demo, status, update_module)
+                        odoo.modules.load_modules(registry._db, force_demo, status, update_module, is_ro=is_ro)
                     except Exception:
-                        odoo.modules.reset_modules_state(db_name)
+                        odoo.modules.reset_modules_state(db_name, is_ro=is_ro)
                         raise
                 except Exception:
                     _logger.exception('Failed to load registry')
@@ -102,7 +102,7 @@ class Registry(Mapping):
 
         return registry
 
-    def init(self, db_name):
+    def init(self, db_name, is_ro=False):
         self.models = {}    # model name/model instance mapping
         self._sql_constraints = set()
         self._init = True
@@ -116,7 +116,7 @@ class Registry(Mapping):
         self.loaded_xmlids = set()
 
         self.db_name = db_name
-        self._db = odoo.sql_db.db_connect(db_name)
+        self._db = odoo.sql_db.db_connect(db_name) if not is_ro else odoo.sql_db.db_connect_ro(db_name, is_ro=True)
 
         # cursor for test mode; None means "normal" mode
         self.test_cr = None
