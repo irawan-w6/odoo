@@ -92,7 +92,7 @@ except ImportError:
 SUPERUSER_ID = 1
 
 
-def registry(database_name=None):
+def registry(database_name=None, is_ro=False):
     """
     Return the model registry for the given database, or the database mentioned
     on the current thread. If the registry does not exist yet, it is created on
@@ -101,7 +101,7 @@ def registry(database_name=None):
     if database_name is None:
         import threading
         database_name = threading.currentThread().dbname
-    return modules.registry.Registry(database_name)
+    return modules.registry.Registry(database_name, is_ro=is_ro)
 
 #----------------------------------------------------------
 # Imports

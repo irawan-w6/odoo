@@ -435,7 +435,7 @@ class Environment(Mapping):
         """
         cls._local.environments = Environments()
 
-    def __new__(cls, cr, uid, context, su=False):
+    def __new__(cls, cr, uid, context, su=False, is_ro=False):
         if uid == SUPERUSER_ID:
             su = True
         assert context is not None
@@ -451,7 +451,7 @@ class Environment(Mapping):
         self = object.__new__(cls)
         args = (cr, uid, frozendict(context), su)
         self.cr, self.uid, self.context, self.su = self.args = args
-        self.registry = Registry(cr.dbname)
+        self.registry = Registry(cr.dbname, is_ro=is_ro)
         self.cache = envs.cache
         self._protected = envs.protected        # proxy to shared data structure
         self.all = envs
