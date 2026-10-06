@@ -487,6 +487,17 @@ var StatementModel = BasicModel.extend({
                 model: 'account.reconcile.model',
                 method: 'search_read',
                 domain: params.domainReconcile || [],
+                fields: [
+                    'name', 'has_second_line',
+                    'account_id', 'amount', 'amount_type', 'analytic_account_id',
+                    'journal_id', 'label', 'force_tax_included', 'tax_ids',
+                    'analytic_tag_ids', 'to_check', 'amount_from_label_regex',
+                    'decimal_separator',
+                    'second_account_id', 'second_amount', 'second_amount_type',
+                    'second_analytic_account_id', 'second_journal_id', 'second_label',
+                    'second_tax_ids', 'second_analytic_tag_ids',
+                    'second_amount_from_label_regex',
+                ],
             })
             .then(function (reconcileModels) {
                var analyticTagIds = [];
