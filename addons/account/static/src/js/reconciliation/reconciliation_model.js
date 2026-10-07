@@ -488,7 +488,7 @@ var StatementModel = BasicModel.extend({
                 method: 'search_read',
                 domain: params.domainReconcile || [],
                 fields: [
-                    'name', 'has_second_line',
+                    'name', 'rule_type', 'match_journal_ids', 'has_second_line',
                     'account_id', 'amount', 'amount_type', 'analytic_account_id',
                     'journal_id', 'label', 'force_tax_included', 'tax_ids',
                     'analytic_tag_ids', 'to_check', 'amount_from_label_regex',
