@@ -854,7 +854,8 @@ action = model.setting_init_bank_account_action()
                         <div class="oe_button_box" name="button_box">
                             <button type="object" name="action_reconcile_stat"
                               class="oe_stat_button" icon="fa-book">
-                                <field name="number_entries" string="Journal Entries" widget="statinfo"/>
+                                <!-- <field name="number_entries" string="Journal Entries" widget="statinfo"/> -->
+                                <span>Journal Entries</span>
                             </button>
                         </div>
                         <div class="oe_title">
